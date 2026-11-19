@@ -1,0 +1,77 @@
+// PGS EXP Freight Platform — data model (excerpt)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransportMode {
+  OCEAN
+  AIR
+  RAIL
+  TRUCKING
+}
+
+enum ShipmentStatus {
+  QUOTED
+  BOOKED
+  IN_TRANSIT
+  CUSTOMS_HOLD
+  OUT_FOR_DELIVERY
+  DELIVERED
+  EXCEPTION
+}
+
+model Customer {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  shipments Shipment[]
+  createdAt DateTime   @default(now())
+}
+
+model Rate {
+  id            String        @id @default(cuid())
+  carrier       String
+  mode          TransportMode
+  origin        String // port / airport code
+  destination   String
+  baseRateCents Int
+  currency      String        @default("USD")
+  validFrom     DateTime
+  validTo       DateTime
+  createdAt     DateTime      @default(now())
+
+  @@index([mode, origin, destination])
+}
+
+model Shipment {
+  id            String          @id @default(cuid())
+  customer      Customer        @relation(fields: [customerId], references: [id])
+  customerId    String
+  mode          TransportMode
+  origin        String
+  destination   String
+  status        ShipmentStatus  @default(QUOTED)
+  grossWeightKg Float
+  volumeCbm     Float?
+  trackingNo    String?         @unique
+  events        TrackingEvent[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model TrackingEvent {
+  id         String   @id @default(cuid())
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
+  shipmentId String
+  carrier    String
+  eventCode  String
+  location   String?
+  occurredAt DateTime
+
+  @@unique([carrier, eventCode, occurredAt])
+}
