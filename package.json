@@ -1,0 +1,17 @@
+{
+  "name": "pgs-exp-freight-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build": "tsc -b packages/pricing-engine packages/carrier-clients apps/api services/worker",
+    "test": "npm run test -w @pgs/pricing-engine"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
